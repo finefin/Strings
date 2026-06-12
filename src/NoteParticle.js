@@ -1,7 +1,7 @@
 export default class NoteParticle {
     constructor(scene, x, y, config = {}) {
         const {
-            radius = 5,
+            radius = 10,
             color = 0xffffff,
             minLifetime = 2000,
             maxLifetime = 2000,
@@ -28,9 +28,9 @@ export default class NoteParticle {
         const speed = minSpeed + Math.random() * (maxSpeed - minSpeed);
 
         this.body = scene.matter.add.circle(x, y, radius, {
-            restitution: 1,
+            restitution: 0.95,
             friction: 0,
-            frictionAir: 0,
+            frictionAir: 0.001,
             frictionStatic: 0,
             collisionFilter: {
                 group: -1,
@@ -45,6 +45,8 @@ export default class NoteParticle {
 
         this.prevX = x;
         this.prevY = y;
+        this.hitStrings = new Set();
+        this.targetColor = config.targetColor ?? null;
 
         const vx = Math.cos(angle) * speed;
         const vy = Math.sin(angle) * speed;
@@ -69,12 +71,15 @@ export default class NoteParticle {
             return;
         }
 
-        const alpha = 1 ;
         const pos = this.body.position;
 
         this.graphics.clear();
 
-        this.graphics.fillStyle(this.color, alpha);
+        const glowSize = this.radius + 4;
+        this.graphics.fillStyle(this.color, 0.15);
+        this.graphics.fillCircle(pos.x, pos.y, glowSize);
+
+        this.graphics.fillStyle(this.color, 0.9);
         this.graphics.fillCircle(pos.x, pos.y, this.radius);
     }
 

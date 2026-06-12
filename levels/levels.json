@@ -1,0 +1,244 @@
+[
+  {
+    "name": "Level 1 — First Steps",
+    "description": "Guide the blue particle to the blue target using the string.",
+    "gravity": { "x": 0, "y": 0.8 },
+    "faucet": {
+      "x": 960,
+      "y": 80,
+      "interval": 800,
+      "colors": ["#0055ff"],
+      "speed": 2.5,
+      "directionSpread": 0.4
+    },
+    "strings": [
+      {
+        "endA": { "x": 600, "y": 400 },
+        "endB": { "x": 1320, "y": 800 },
+        "color": "#0055ff",
+        "lineWidth": 6,
+        "frequency": 4,
+        "note": 1,
+        "pluckAmplitude": 25,
+        "decayMs": 1500
+      }
+    ],
+    "targets": [
+      {
+        "x": 350,
+        "y": 750,
+        "color": "#0055ff",
+        "radius": 60
+      }
+    ]
+  },
+  {
+    "name": "Level 2 — Two Colors",
+    "description": "Blue and red particles. Route each to its matching target.",
+    "gravity": { "x": 0, "y": 0.9 },
+    "faucet": {
+      "x": 960,
+      "y": 80,
+      "interval": 1800,
+      "colors": ["#0055ff", "#ff2244"],
+      "speed": 2.8,
+      "directionSpread": 0.35
+    },
+    "strings": [
+      {
+        "endA": { "x": 500, "y": 350 },
+        "endB": { "x": 800, "y": 380 },
+        "color": "#0055ff",
+        "lineWidth": 6,
+        "frequency": 4,
+        "note": 1,
+        "pluckAmplitude": 25,
+        "decayMs": 1500
+      },
+      {
+        "endA": { "x": 1200, "y": 500 },
+        "endB": { "x": 1400, "y": 460 },
+        "color": "#ff2244",
+        "lineWidth": 6,
+        "frequency": 6,
+        "note": 1.4,
+        "pluckAmplitude": 25,
+        "decayMs": 1500
+      }
+    ],
+    "targets": [
+      {
+        "x": 280,
+        "y": 700,
+        "color": "#0055ff",
+        "radius": 30
+      },
+      {
+        "x": 1700,
+        "y": 750,
+        "color": "#ff2244",
+        "radius": 30
+      }
+    ]
+  },
+  {
+    "name": "Level 3 — Three's a Crowd",
+    "description": "Three colors, three strings, three targets. Can you handle it?",
+    "gravity": { "x": 0, "y": 1.0 },
+    "faucet": {
+      "x": 960,
+      "y": 80,
+      "interval": 1500,
+      "colors": ["#0055ff", "#ff2244", "#22cc55"],
+      "speed": 3.0,
+      "directionSpread": 0.3
+    },
+    "strings": [
+      {
+        "endA": { "x": 400, "y": 300 },
+        "endB": { "x": 700, "y": 320 },
+        "color": "#0055ff",
+        "lineWidth": 5,
+        "frequency": 4,
+        "note": 1,
+        "pluckAmplitude": 20,
+        "decayMs": 1500
+      },
+      {
+        "endA": { "x": 850, "y": 450 },
+        "endB": { "x": 1550, "y": 400 },
+        "color": "#ff2244",
+        "lineWidth": 5,
+        "frequency": 6,
+        "note": 1.4,
+        "pluckAmplitude": 20,
+        "decayMs": 1500
+      },
+      {
+        "endA": { "x": 1400, "y": 550 },
+        "endB": { "x": 170, "y": 800 },
+        "color": "#22cc55",
+        "lineWidth": 5,
+        "frequency": 8,
+        "note": 1.8,
+        "pluckAmplitude": 20,
+        "decayMs": 1500
+      }
+    ],
+    "targets": [
+      {
+        "x": 200,
+        "y": 600,
+        "color": "#0055ff",
+        "radius": 28
+      },
+      {
+        "x": 1100,
+        "y": 650,
+        "color": "#ff2244",
+        "radius": 28
+      },
+      {
+        "x": 1700,
+        "y": 850,
+        "color": "#22cc55",
+        "radius": 28
+      }
+    ]
+  },
+  {
+    "name": "Level 4 — Anchored",
+    "description": "Each string has one fixed end. Position the free ends to route both colors.",
+    "gravity": { "x": 0, "y": 0.9 },
+    "faucet": {
+      "x": 960,
+      "y": 80,
+      "interval": 1600,
+      "colors": ["#0055ff", "#ff2244"],
+      "speed": 2.8,
+      "directionSpread": 0.35
+    },
+    "strings": [
+      {
+        "endA": { "x": 400, "y": 500, "fixed": true },
+        "endB": { "x": 750, "y": 600 },
+        "color": "#0055ff",
+        "lineWidth": 6,
+        "frequency": 4,
+        "note": 1,
+        "pluckAmplitude": 25,
+        "decayMs": 1500
+      },
+      {
+        "endA": { "x": 1450, "y": 500, "fixed": true },
+        "endB": { "x": 1150, "y": 600 },
+        "color": "#ff2244",
+        "lineWidth": 6,
+        "frequency": 6,
+        "note": 1.4,
+        "pluckAmplitude": 25,
+        "decayMs": 1500
+      }
+    ],
+    "targets": [
+      {
+        "x": 250,
+        "y": 750,
+        "color": "#0055ff",
+        "radius": 35
+      },
+      {
+        "x": 1600,
+        "y": 750,
+        "color": "#ff2244",
+        "radius": 35
+      }
+    ]
+  },
+  {
+    "name": "Level 5 — The White Particle",
+    "description": "White particle takes the first string's color, then blends normally with the second.",
+    "tolerance": 5,
+    "killWalls": ["bottom"],
+    "gravity": { "x": 0, "y": 0.8 },
+    "faucet": {
+      "x": 960,
+      "y": 80,
+      "interval": 2000,
+      "colors": ["#ffffff"],
+        "targetColor": "#993399",
+      "speed": 2.5,
+      "directionSpread": 0.4
+    },
+    "strings": [
+      {
+        "endA": { "x": 600, "y": 350 },
+        "endB": { "x": 900, "y": 300 },
+        "color": "#ff3333",
+        "lineWidth": 6,
+        "frequency": 4,
+        "note": 1,
+        "pluckAmplitude": 25,
+        "decayMs": 1500
+      },
+      {
+        "endA": { "x": 1000, "y": 500 },
+        "endB": { "x": 1300, "y": 450 },
+        "color": "#3333ff",
+        "lineWidth": 6,
+        "frequency": 6,
+        "note": 1.4,
+        "pluckAmplitude": 25,
+        "decayMs": 1500
+      }
+    ],
+    "targets": [
+      {
+        "x": 960,
+        "y": 800,
+        "color": "#993399",
+        "radius": 40
+      }
+    ]
+  }
+]

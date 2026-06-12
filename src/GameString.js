@@ -1,76 +1,123 @@
-import NoteParticle from "./NoteParticle.js";
-
 export default class GameString {
-    constructor(scene, x, y, length, config = {}) {
+    constructor(scene, endA, endB, config = {}) {
         const {
             color = 0xffffff,
             lineWidth = 4,
-            angle = 0,
             pluckAmplitude = 30,
             frequency = 6,
             decayMs = 1200,
-            particleConfig = {},
-            note,
+            note = 1,
         } = config;
 
         this.scene = scene;
-        this.x = x;
-        this.y = y;
-        this.length = length;
+        this.endA = { x: endA.x, y: endA.y };
+        this.endB = { x: endB.x, y: endB.y };
         this.color = color;
         this.lineWidth = lineWidth;
-        this.angle = angle;
         this.pluckAmplitude = pluckAmplitude;
         this.frequency = frequency;
         this.decayMs = decayMs;
-        this.particleConfig = particleConfig;
-        this.note = note ?? 1;
+        this.note = note;
 
         this.plucks = [];
+        this._handleRadius = Math.max(10, lineWidth + 4);
 
         this.graphics = scene.add.graphics();
-        this.graphics.setPosition(x, y);
-
-        if (angle !== 0) {
-            this.graphics.setAngle(angle);
-        }
-
         this.drawString();
 
-        const hitWidth = Math.max(20, lineWidth * 6);
-        this.hitArea = scene.add.rectangle(x, y, length, hitWidth)
-            .setOrigin(0.5, 0.5)
-            .setInteractive({ useHandCursor: true })
-            .setAlpha(0.001);
+        this.handleA = this.createHandle(scene, this.endA.x, this.endA.y, 'A', endA.fixed ?? false);
+        this.handleB = this.createHandle(scene, this.endB.x, this.endB.y, 'B', endB.fixed ?? false);
 
-        if (angle !== 0) {
-            this.hitArea.setAngle(angle);
-        }
-
-        this.hitArea.on('pointerover', (pointer) => {
-            const point = this.closestPointOnString(pointer.worldX, pointer.worldY);
-            const dx = pointer.worldX - (this.scene.prevPointerX ?? pointer.worldX);
-            const dy = pointer.worldY - (this.scene.prevPointerY ?? pointer.worldY);
-            this.pluck(point.x, point.y, dx, dy);
-        });
-
-        const bodyOptions = {
-            isStatic: true,
-            isSensor: true,
-            label: 'gameString',
-        };
-        if (angle !== 0) {
-            bodyOptions.angle = angle * Math.PI / 180;
-        }
-        this.body = scene.matter.add.rectangle(x, y, length, 6, bodyOptions);
-        this.body.gameStringRef = this;
+        this.createBody(scene);
 
         if (!this.scene.strings) this.scene.strings = [];
         this.scene.strings.push(this);
     }
 
+    createHandle(scene, x, y, label, fixed = false) {
+        if (fixed) {
+            const handle = scene.add.circle(x, y, this._handleRadius)
+                .setStrokeStyle(2, 0xff4444, 0.9)
+                .setFillStyle(0xff0000, 0.25)
+                .setDepth(100);
+
+            const cross = scene.add.text(x, y, '\u2716', {
+                fontSize: Math.round(this._handleRadius * 1.4) + 'px',
+                fill: '#ff4444',
+                fontFamily: 'monospace',
+            }).setOrigin(0.5).setDepth(101);
+
+            handle._fixedCross = cross;
+            return handle;
+        }
+
+        const handle = scene.add.circle(x, y, this._handleRadius)
+            .setStrokeStyle(2, 0xffffff, 0.9)
+            .setFillStyle(this.color, 0.4)
+            .setDepth(100)
+            .setInteractive({ draggable: true, useHandCursor: true });
+
+        handle.on('drag', (pointer, dragX, dragY) => {
+            handle.x = dragX;
+            handle.y = dragY;
+            if (label === 'A') {
+                this.endA.x = dragX;
+                this.endA.y = dragY;
+                console.log (Math.floor(this.endA.x), Math.floor(this.endA.y))
+            } else {
+                this.endB.x = dragX;
+                this.endB.y = dragY;
+                console.log (Math.floor(this.endB.x), Math.floor(this.endB.y))
+            }
+            this.updateBody();
+            this.drawString();
+        });
+
+        return handle;
+    }
+
+    createBody() {
+        const cx = (this.endA.x + this.endB.x) / 2;
+        const cy = (this.endA.y + this.endB.y) / 2;
+        const dx = this.endB.x - this.endA.x;
+        const dy = this.endB.y - this.endA.y;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx);
+
+        const bodyOptions = {
+            isStatic: true,
+            label: 'gameString',
+            restitution: 0.6,
+            friction: 0,
+            frictionAir: 0,
+        };
+        if (angle !== 0) {
+            bodyOptions.angle = angle;
+        }
+
+        if (this.body) {
+            this.scene.matter.world.remove(this.body);
+        }
+        this.body = this.scene.matter.add.rectangle(cx, cy, len, Math.max(18, this.lineWidth * 3), bodyOptions);
+        this.body.gameStringRef = this;
+    }
+
+    updateBody() {
+        this.createBody();
+    }
+
+    get length() {
+        const dx = this.endB.x - this.endA.x;
+        const dy = this.endB.y - this.endA.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
     playNote() {
-        this.scene.sound.play('blip', { rate: this.note, volume: 0.3 });
+        try {
+            this.scene.sound.play('blip', { rate: this.note, volume: 0.3 });
+        } catch (e) {
+            // sound might not be loaded yet
+        }
     }
 
     blendColors(c1, c2, t) {
@@ -81,40 +128,25 @@ export default class GameString {
              | Math.round(b1 + (b2 - b1) * t);
     }
 
-    pluck(spawnX, spawnY, dirX, dirY, sourceColor) {
-        if (spawnX === undefined) spawnX = this.x;
-        if (spawnY === undefined) spawnY = this.y;
+    vibrate(spawnX, spawnY, dirX, dirY) {
+        if (spawnX === undefined) spawnX = (this.endA.x + this.endB.x) / 2;
+        if (spawnY === undefined) spawnY = (this.endA.y + this.endB.y) / 2;
 
         const pluckT = this.closestPointOnString(spawnX, spawnY).t;
 
         let dirSign = 1;
         if (dirX !== undefined && dirY !== undefined && (dirX !== 0 || dirY !== 0)) {
-            const rad = this.angle * Math.PI / 180;
-            const perpX = -Math.sin(rad);
-            const perpY = Math.cos(rad);
-            dirSign = Math.sign(dirX * perpX + dirY * perpY) || 1;
+            const dx = this.endB.x - this.endA.x;
+            const dy = this.endB.y - this.endA.y;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            if (len > 0) {
+                const perpX = -dy / len;
+                const perpY = dx / len;
+                dirSign = Math.sign(dirX * perpX + dirY * perpY) || 1;
+            }
         }
 
         this.plucks.push({ t: pluckT, elapsed: 0, dirSign });
-
-        const spawnColor = sourceColor !== undefined
-            ? this.blendColors(this.color, sourceColor, 0.5)
-            : this.color;
-
-        let directionAngle;
-        if (dirX !== undefined && dirY !== undefined && (dirX !== 0 || dirY !== 0)) {
-            directionAngle = Math.atan2(dirY, dirX);
-        } else {
-            const radians = this.angle * Math.PI / 180;
-            directionAngle = radians + Math.PI / 2;
-        }
-        new NoteParticle(this.scene, spawnX, spawnY, {
-            ...this.particleConfig,
-            color: spawnColor,
-            direction: directionAngle,
-            directionSpread: Math.PI / 2,
-        });
-
         this.playNote();
 
         if (!this.vibrationTimer) {
@@ -155,17 +187,22 @@ export default class GameString {
         this.graphics.clear();
         this.graphics.lineStyle(this.lineWidth, this.color, 1);
 
-        const halfLen = this.length / 2;
-
-        this.graphics.beginPath();
-        this.graphics.moveTo(-halfLen, 0);
+        const dx = this.endB.x - this.endA.x;
+        const dy = this.endB.y - this.endA.y;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        const perpX = len > 0 ? -dy / len : 0;
+        const perpY = len > 0 ? dx / len : 0;
 
         const steps = 30;
 
-        for (let i = 1; i <= steps; i++) {
+        this.graphics.beginPath();
+
+        for (let i = 0; i <= steps; i++) {
             const t = i / steps;
-            const px = halfLen * (2 * t - 1);
-            let py = 0;
+            const bx = this.endA.x + dx * t;
+            const by = this.endA.y + dy * t;
+
+            let displacement = 0;
             for (const pluck of this.plucks) {
                 if (pluck.elapsed >= this.decayMs) continue;
                 const envelope = 1 - pluck.elapsed / this.decayMs;
@@ -174,23 +211,24 @@ export default class GameString {
                     ? (pt > 0 ? t / pt : 0)
                     : (pt < 1 ? (1 - t) / (1 - pt) : 0);
                 const oscillation = pluck.dirSign * Math.cos(pluck.elapsed * 0.001 * this.frequency * Math.PI * 2);
-                py += this.pluckAmplitude * envelope * oscillation * tri;
+                displacement += this.pluckAmplitude * envelope * oscillation * tri;
             }
-            this.graphics.lineTo(px, py);
+
+            const px = bx + perpX * displacement;
+            const py = by + perpY * displacement;
+
+            if (i === 0) this.graphics.moveTo(px, py);
+            else this.graphics.lineTo(px, py);
         }
 
         this.graphics.strokePath();
     }
 
     checkParticleCrossing(prevX, prevY, currX, currY) {
-        const rad = this.angle * Math.PI / 180;
-        const cos = Math.cos(rad);
-        const sin = Math.sin(rad);
-        const halfLen = this.length / 2;
-        const sx = this.x - cos * halfLen;
-        const sy = this.y - sin * halfLen;
-        const ex = this.x + cos * halfLen;
-        const ey = this.y + sin * halfLen;
+        const sx = this.endA.x;
+        const sy = this.endA.y;
+        const ex = this.endB.x;
+        const ey = this.endB.y;
         const pdx = currX - prevX;
         const pdy = currY - prevY;
         const sdx = ex - sx;
@@ -204,20 +242,12 @@ export default class GameString {
     }
 
     closestPointOnString(worldX, worldY) {
-        const rad = this.angle * Math.PI / 180;
-        const cos = Math.cos(rad);
-        const sin = Math.sin(rad);
-        const halfLen = this.length / 2;
-        const sx = this.x - cos * halfLen;
-        const sy = this.y - sin * halfLen;
-        const ex = this.x + cos * halfLen;
-        const ey = this.y + sin * halfLen;
-        const dx = ex - sx;
-        const dy = ey - sy;
+        const dx = this.endB.x - this.endA.x;
+        const dy = this.endB.y - this.endA.y;
         const lenSq = dx * dx + dy * dy;
-        if (lenSq === 0) return { x: this.x, y: this.y };
-        const t = Math.max(0, Math.min(1, ((worldX - sx) * dx + (worldY - sy) * dy) / lenSq));
-        return { x: sx + t * dx, y: sy + t * dy, t };
+        if (lenSq === 0) return { x: this.endA.x, y: this.endA.y, t: 0 };
+        const t = Math.max(0, Math.min(1, ((worldX - this.endA.x) * dx + (worldY - this.endA.y) * dy) / lenSq));
+        return { x: this.endA.x + t * dx, y: this.endA.y + t * dy, t };
     }
 
     destroy() {
@@ -226,9 +256,18 @@ export default class GameString {
             this.scene.matter.world.remove(this.body);
             this.body = null;
         }
+        if (this.handleA) {
+            if (this.handleA._fixedCross) this.handleA._fixedCross.destroy();
+            this.handleA.destroy();
+            this.handleA = null;
+        }
+        if (this.handleB) {
+            if (this.handleB._fixedCross) this.handleB._fixedCross.destroy();
+            this.handleB.destroy();
+            this.handleB = null;
+        }
         const idx = this.scene.strings ? this.scene.strings.indexOf(this) : -1;
         if (idx !== -1) this.scene.strings.splice(idx, 1);
         this.graphics.destroy();
-        this.hitArea.destroy();
     }
 }

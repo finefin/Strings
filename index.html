@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <title>WIP</title>
+  <title>String Theory</title>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="stylesheet" href="css/main.css">
@@ -15,12 +15,8 @@
   <script src="src/framework/three.min.js"></script>
   <script  src="src/manager/helpers.js"></script>
 
-
-
   <script >
-
     window.onbeforeunload = function (e) {
-      // Save game before closing
       try {
         const gameScene = window.game?.scene?.scenes[0];
         if (gameScene && gameScene.saveGame) {
@@ -29,7 +25,6 @@
       } catch (error) {
         console.log("Could not save on close:", error);
       }
-
       e = e || window.event;
       if (e) {
         e.returnValue = '?';
