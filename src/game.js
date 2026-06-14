@@ -1,3 +1,4 @@
+import StartScene from "./StartScene.js";
 import gameScene from "./gameScene.js";
 
 var config = {
@@ -9,7 +10,7 @@ var config = {
         height: height
     },
     backgroundColor: '#0a0a0a',
-    scene: [gameScene],
+    scene: [StartScene, gameScene],
     physics: {
         default: 'matter',
         matter: {

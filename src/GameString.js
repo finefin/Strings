@@ -7,6 +7,7 @@ export default class GameString {
             frequency = 6,
             decayMs = 1200,
             note = 1,
+            hideHandles = false,
         } = config;
 
         this.scene = scene;
@@ -25,8 +26,10 @@ export default class GameString {
         this.graphics = scene.add.graphics();
         this.drawString();
 
-        this.handleA = this.createHandle(scene, this.endA.x, this.endA.y, 'A', endA.fixed ?? false);
-        this.handleB = this.createHandle(scene, this.endB.x, this.endB.y, 'B', endB.fixed ?? false);
+        if (!hideHandles) {
+            this.handleA = this.createHandle(scene, this.endA.x, this.endA.y, 'A', endA.fixed ?? false);
+            this.handleB = this.createHandle(scene, this.endB.x, this.endB.y, 'B', endB.fixed ?? false);
+        }
 
         this.createBody(scene);
 
