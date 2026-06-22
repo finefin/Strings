@@ -290,7 +290,7 @@ export default class gameScene extends Phaser.Scene {
             fontStyle: 'bold',
         }).setOrigin(0.5).setDepth(301);
 
-        this.add.text(centerX, centerY + 10, 'Congratulations!', {
+        this.add.text(centerX, centerY + 10, 'Win code: QUANTUM FOAM', {
             fontSize: '28px',
             fill: '#ffffff',
             fontFamily: 'monospace',
